@@ -1,0 +1,6 @@
+framework module Pods_NotReactive_Tests {
+  umbrella header "Pods-NotReactive_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}

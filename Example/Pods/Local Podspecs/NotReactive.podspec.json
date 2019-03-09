@@ -1,0 +1,22 @@
+{
+  "name": "NotReactive",
+  "version": "0.1.0",
+  "summary": "A short description of NotReactive.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/intitni/NotReactive",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "intitni": "int123c@gmail.com"
+  },
+  "source": {
+    "git": "https://github.com/intitni/NotReactive.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "NotReactive/Classes/**/*"
+}

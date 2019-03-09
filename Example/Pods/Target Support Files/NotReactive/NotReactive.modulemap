@@ -1,0 +1,6 @@
+framework module NotReactive {
+  umbrella header "NotReactive-umbrella.h"
+
+  export *
+  module * { export * }
+}

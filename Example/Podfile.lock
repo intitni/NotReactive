@@ -1,0 +1,16 @@
+PODS:
+  - NotReactive (0.1.0)
+
+DEPENDENCIES:
+  - NotReactive (from `../`)
+
+EXTERNAL SOURCES:
+  NotReactive:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  NotReactive: 55d48bb7d8b5083f535bb3899d45f347589c8ac1
+
+PODFILE CHECKSUM: 5a6a62e2ce585779ae2db113ffb62a42c73e9063
+
+COCOAPODS: 1.6.0
