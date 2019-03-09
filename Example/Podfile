@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'NotReactive_Example' do
+  pod 'NotReactive', :path => '../'
+
+  target 'NotReactive_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
