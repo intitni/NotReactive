@@ -1,5 +1,3 @@
-import Foundation
-
 public final class DisposeBag {
     private var disposables: [Disposable] = []
     public init() {}

@@ -1,5 +1,3 @@
-import Foundation
-
 public extension NotificationCenter {
     public func observe(_ name: Notification.Name) -> Observation<Notification> {
         return Observation { observation in

@@ -1,5 +1,3 @@
-import Foundation
-
 class Throttler: NSObject {
     private let queue: DispatchQueue
     

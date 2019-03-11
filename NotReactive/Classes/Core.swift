@@ -1,5 +1,3 @@
-import Foundation
-
 public class Observation<V> {
     public class WeakObservation {
         weak var observation: Observation<V>?

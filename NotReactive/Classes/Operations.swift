@@ -1,12 +1,3 @@
-//
-//  Operations.swift
-//  LightWeightReactive
-//
-//  Created by Shangxin Guo on 2019/3/8.
-//
-
-import Foundation
-
 extension Observation {
     /// Converts value to another value.
     public func flatMap<M>(_ transform: @escaping (V)->M?) -> Observation<M> {
