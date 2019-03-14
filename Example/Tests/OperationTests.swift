@@ -120,7 +120,7 @@ class OperationTests: XCTestCase {
     func testAnyAll() {
         var resultAny2 = [(Int?, Int?)]()
         var resultAny3 = [(Int?, Int?, Int?)]()
-        var resultAll2 = [(Int?, Int?)]()
+        var resultAll2 = [(Int, Int)]()
         var resultAll3 = [(Int, Int, Int)]()
         let a = Observable<Int>(0)
         let b = Observable<Int>(0)

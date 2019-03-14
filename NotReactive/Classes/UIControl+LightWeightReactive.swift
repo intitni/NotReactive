@@ -10,7 +10,7 @@ class TargetAction: NSObject {
         super.init()
     }
     
-    @objc public func performAction() {
+    @objc func performAction() {
         block()
     }
 }
