@@ -20,16 +20,18 @@ class OperationTests: XCTestCase {
     }
     
     func testFlatMap() {
-        var received = [String]()
+        var received = [Int]()
         let value = Observable<Int>(0)
+        let o1 = Observable<Int>(1)
+        let o2 = Observable<Int>(2)
         let d = value.observe()
-            .flatMap { if isEven($0) { return String($0) } else { return nil } }
+            .flatMap { if isEven($0) { return o2.observe() } else { return o1.observe() } }
             .subscribe { received.append($0) }
         value.val = 1
         value.val = 2
         d.dispose()
         value.val = 3
-        XCTAssertEqual(received, ["0", "2"])
+        XCTAssertEqual(received, [1, 2, 1])
     }
     
     func testFilter() {
@@ -103,35 +105,43 @@ class OperationTests: XCTestCase {
         d1.dispose()
     }
     
-    func testAny() {
-        var result2 = [(Int?, Int?)]()
-        var result3 = [(Int?, Int?, Int?)]()
+    func testAnyAll() {
+        var resultAny2 = [(Int?, Int?)]()
+        var resultAny3 = [(Int?, Int?, Int?)]()
+        var resultAll3 = [(Int, Int, Int)]()
         let a = Observable<Int>(0)
         let b = Observable<Int>(0)
-        let c = Observable<Int>(0)
+        let c = Emitter<Int>()
         
         let any2 = any(a.observe(), b.observe())
             .subscribe { av, bv in
-                result2.append((av, bv))
+                resultAny2.append((av, bv))
             }
         
         let any3 = any(a.observe(), b.observe(), c.observe())
             .subscribe { av, bv, cv in
-                result3.append((av, bv, cv))
+                resultAny3.append((av, bv, cv))
+            }
+        
+        let all3 = all(a.observe(), b.observe(), c.observe())
+            .subscribe { av, bv, cv in
+                resultAll3.append((av, bv, cv))
             }
         
         a.val = 1
         b.val = 1
-        c.val = 1
+        c.emit(1)
         a.val = 2
-        c.val = 2
+        c.emit(2)
         any2.dispose()
         a.val = 3
         any3.dispose()
-        c.val = 3
+        all3.dispose()
+        c.emit(3)
         
-        XCTAssert(result2.elementsEqual([(0,0), (1,0), (1,1), (2,1)], by: ==))
-        XCTAssert(result3.elementsEqual([(0,0,0), (1,0,0), (1,1,0), (1,1,1), (2,1,1), (2,1,2), (3,1,2)], by: ==))
+        XCTAssert(resultAny2.elementsEqual([(0,0), (1,0), (1,1), (2,1)], by: ==))
+        XCTAssert(resultAny3.elementsEqual([(0,0,nil), (1,0,nil), (1,1,nil), (1,1,1), (2,1,1), (2,1,2), (3,1,2)], by: ==))
+        XCTAssert(resultAny3.elementsEqual([(1,1,1), (2,1,1), (2,1,2), (3,1,2)], by: ==))
     }
     
     func testThrottling() {

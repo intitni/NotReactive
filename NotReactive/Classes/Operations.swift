@@ -1,12 +1,12 @@
 extension Observation {
-    /// Converts value to another value.
-    public func flatMap<M>(_ transform: @escaping (V)->M?) -> Observation<M> {
+    /// Converts value to that from another observation.
+    public func flatMap<M>(_ transform: @escaping (V)->Observation<M>) -> Observation<M> {
         return Observation<M> { observation in
             return self.subscribeEvent { event in
                 switch event {
                 case let .next(v):
-                    guard let next = transform(v) else { return }
-                    observation.action(.next(next))
+                    guard let e = transform(v).latestEvent else { return }
+                    observation.action(e)
                 case let .failure(e): observation.action(.failure(e))
                 }
             }
@@ -15,7 +15,14 @@ extension Observation {
     
     /// Converts value to another value.
     public func map<M>(_ transform: @escaping (V)->M) -> Observation<M> {
-        return flatMap { v in return transform(v) }
+        return Observation<M> { observation in
+            return self.subscribeEvent { event in
+                switch event {
+                case let .next(v): observation.action(.next(transform(v)))
+                case let .failure(e): observation.action(.failure(e))
+                }
+            }
+        }
     }
     
     /// Notify observers on specific queue.
@@ -97,6 +104,12 @@ public func any<A, B>(_ l: Observation<A>, _ r: Observation<B>) -> Observation<(
     }
 }
 
+public func all<A, B>(_ l: Observation<A>, _ r: Observation<B>) -> Observation<(A, B)> {
+    return any(l, r)
+        .filter { $0.0 != nil && $0.1 != nil }
+        .map { ($0.0!, $0.1!) }
+}
+
 /// Notify observers when one of the observations changes.
 public func any<A, B, C>(_ a: Observation<A>, _ b: Observation<B>, _ c: Observation<C>) -> Observation<(A?, B?, C?)> {
     let aOrB = any(a, b)
@@ -104,6 +117,12 @@ public func any<A, B, C>(_ a: Observation<A>, _ b: Observation<B>, _ c: Observat
         if let eab = eab { return (eab.0, eab.1, ec) }
         return (nil, nil, ec)
     }
+}
+
+public func all<A, B, C>(_ a: Observation<A>, _ b: Observation<B>, _ c: Observation<C>) -> Observation<(A, B, C)> {
+    return any(a, b, c)
+        .filter { $0.0 != nil && $0.1 != nil && $0.2 != nil }
+        .map { ($0.0!, $0.1!, $0.2!) }
 }
 
 public protocol OptionalType {
@@ -120,6 +139,6 @@ extension Optional: OptionalType {
 extension Observation where V: OptionalType {
     /// Notify observers when value is not nil
     public func filterNil() -> Observation<V.Wrapped> {
-        return flatMap { v in return v.value }
+        return filter { $0.value != nil } .map { $0.value! }
     }
 }
