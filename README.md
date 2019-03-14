@@ -69,7 +69,7 @@ let value = Observation<Int>(0)
 let disposable = value.observe()
     .ignoreLatest()
     .map { $0 }
-    .flatMap { $0 }
+    .flatMap { anotherObservation }
     .distinct()
     .throttle(seconds: 0.5)
     .on(DispatchQueue.main)
