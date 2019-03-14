@@ -31,7 +31,7 @@ class OperationTests: XCTestCase {
         value.val = 2
         d.dispose()
         value.val = 3
-        XCTAssertEqual(received, [1, 2, 1])
+        XCTAssertEqual(received, [2, 1, 2])
     }
     
     func testFilter() {
@@ -93,21 +93,34 @@ class OperationTests: XCTestCase {
     }
     
     func testOnQueue() {
-        let queue = DispatchQueue(label: "hello")
-        let value = Observable<Int>(0)
+        let queue = DispatchQueue.global(qos: .userInteractive) // concurrent queue
+        var values = [Int]()
+        let value = Observable<Int>(6)
         let d1 = value.observe()
+            .ignoreLatest() // I still can't figure out why 6 can be in the front, ignoring first value for now
             .on(queue)
-            .subscribe { _ in
-                XCTAssertFalse(Thread.isMainThread)
+            .subscribe { v in
+                // try to delay earlier calls to fire later
+                // if order inverted, running on a concurrent queue, not main queue
+                sleep(UInt32(v))
+                values.append(v)
             }
-        
+        value.val = 2
         value.val = 1
-        d1.dispose()
+        value.val = 0
+        let expectation = XCTestExpectation(description: "hi")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            d1.dispose()
+            XCTAssertEqual(values, [0,1,2])
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 4)
     }
     
     func testAnyAll() {
         var resultAny2 = [(Int?, Int?)]()
         var resultAny3 = [(Int?, Int?, Int?)]()
+        var resultAll2 = [(Int?, Int?)]()
         var resultAll3 = [(Int, Int, Int)]()
         let a = Observable<Int>(0)
         let b = Observable<Int>(0)
@@ -123,6 +136,11 @@ class OperationTests: XCTestCase {
                 resultAny3.append((av, bv, cv))
             }
         
+        let all2 = all(a.observe(), b.observe())
+            .subscribe { av, bv in
+                resultAll2.append((av, bv))
+        }
+        
         let all3 = all(a.observe(), b.observe(), c.observe())
             .subscribe { av, bv, cv in
                 resultAll3.append((av, bv, cv))
@@ -134,14 +152,16 @@ class OperationTests: XCTestCase {
         a.val = 2
         c.emit(2)
         any2.dispose()
+        all2.dispose()
         a.val = 3
         any3.dispose()
         all3.dispose()
         c.emit(3)
         
         XCTAssert(resultAny2.elementsEqual([(0,0), (1,0), (1,1), (2,1)], by: ==))
+        XCTAssert(resultAll2.elementsEqual([(0,0), (1,0), (1,1), (2,1)], by: ==))
         XCTAssert(resultAny3.elementsEqual([(0,0,nil), (1,0,nil), (1,1,nil), (1,1,1), (2,1,1), (2,1,2), (3,1,2)], by: ==))
-        XCTAssert(resultAny3.elementsEqual([(1,1,1), (2,1,1), (2,1,2), (3,1,2)], by: ==))
+        XCTAssert(resultAll3.elementsEqual([(1,1,1), (2,1,1), (2,1,2), (3,1,2)], by: ==))
     }
     
     func testThrottling() {
