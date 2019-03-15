@@ -1,11 +1,15 @@
 public class Observation<V> {
     public class WeakObservation {
         weak var observation: Observation<V>?
-        var latestEvent: Event? { return observation?.latestEvent }
-        func action(_ event: Event) {
+        public var latestEvent: Event? { return observation?.latestEvent }
+        public func action(_ event: Event) {
             observation?.action(event)
         }
-        init(_ s: Observation<V>) { observation = s }
+        public func handleDisposable(_ disposable: Disposable) {
+            guard let o = observation else { return }
+            disposable.disposed(by: o.disposeBag)
+        }
+        public init(_ s: Observation<V>) { observation = s }
     }
     
     public enum Event {

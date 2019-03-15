@@ -1,11 +1,3 @@
-//
-//  UIControlObservationTests.swift
-//  LightWeightReactive_Tests
-//
-//  Created by Shangxin Guo on 2019/3/8.
-//  Copyright © 2019 CocoaPods. All rights reserved.
-//
-
 import XCTest
 import UIKit
 import NotReactive

@@ -1,12 +1,19 @@
 extension Observation {
-    /// Converts value to that from another observation.
+    public struct CompositionError: Error {
+        let errors: [Error]
+    }
+    
+    /// Converts value to another observation.
     public func flatMap<M>(_ transform: @escaping (V)->Observation<M>) -> Observation<M> {
         return Observation<M> { observation in
             return self.subscribeEvent { event in
                 switch event {
                 case let .next(v):
-                    guard let e = transform(v).latestEvent else { return }
-                    observation.action(e)
+                    let obs = transform(v)
+                    let d = obs.subscribeEvent { nextEvent in
+                        observation.action(nextEvent)
+                    }
+                    observation.handleDisposable(d)
                 case let .failure(e): observation.action(.failure(e))
                 }
             }
@@ -69,6 +76,46 @@ extension Observation {
             }
         }
     }
+    
+    public func or<M>(_ another: Observation<M>) -> Observation<(V?, M?)> {
+        return Observation<(V?, M?)> { observation in
+            let a = self.subscribeEvent { [weak another] event in
+                switch (event, another?.latestEvent) {
+                case let (.next(lv), .next(rv)?): observation.action(.next((lv, rv)))
+                case let (.next(lv), _): observation.action(.next((lv, nil)))
+                case let (.failure(error), _): observation.action(.failure(error))
+                }
+            }
+            let b = another.subscribeEvent { [weak self] event in
+                switch (event, self?.latestEvent) {
+                case let (.next(rv), .next(lv)?): observation.action(.next((lv, rv)))
+                case let (.next(rv), _): observation.action(.next((nil, rv)))
+                case let (.failure(error), _): observation.action(.failure(error))
+                }
+            }
+            return Disposable { a.dispose(); b.dispose() }
+        }
+    }
+    
+    public func and<M>(_ another: Observation<M>) -> Observation<(V, M)> {
+        return Observation<(V, M)> { observation in
+            let a = self.subscribeEvent { [weak another] event in
+                switch (event, another?.latestEvent) {
+                case let (.next(lv), .next(rv)?): observation.action(.next((lv, rv)))
+                case let (.failure(a), .failure(b)?): observation.action(.failure(CompositionError(errors: [a, b])))
+                default: break
+                }
+            }
+            let b = another.subscribeEvent { [weak self] event in
+                switch (event, self?.latestEvent) {
+                case let (.next(rv), .next(lv)?): observation.action(.next((lv, rv)))
+                case let (.failure(a), .failure(b)?): observation.action(.failure(CompositionError(errors: [a, b])))
+                default: break
+                }
+            }
+            return Disposable { a.dispose(); b.dispose() }
+        }
+    }
 }
 
 extension Observation where V: Equatable {
@@ -84,30 +131,12 @@ extension Observation where V: Equatable {
 }
 
 /// Notify observers when one of the observations changes.
-public func any<A, B>(_ l: Observation<A>, _ r: Observation<B>) -> Observation<(A?, B?)> {
-    return Observation<(A?, B?)> { observation in
-        let a = l.subscribeEvent { [weak r] event in
-            switch (event, r?.latestEvent) {
-            case let (.next(lv), .next(rv)?): observation.action(.next((lv, rv)))
-            case let (.next(lv), _): observation.action(.next((lv, nil)))
-            case let (.failure(error), _): observation.action(.failure(error))
-            }
-        }
-        let b = r.subscribeEvent { [weak l] event in
-            switch (event, l?.latestEvent) {
-            case let (.next(rv), .next(lv)?): observation.action(.next((lv, rv)))
-            case let (.next(rv), _): observation.action(.next((nil, rv)))
-            case let (.failure(error), _): observation.action(.failure(error))
-            }
-        }
-        return Disposable { a.dispose(); b.dispose() }
-    }
+public func any<A, B>(_ a: Observation<A>, _ b: Observation<B>) -> Observation<(A?, B?)> {
+    return a.or(b)
 }
 
-public func all<A, B>(_ l: Observation<A>, _ r: Observation<B>) -> Observation<(A, B)> {
-    return any(l, r)
-        .filter { $0.0 != nil && $0.1 != nil }
-        .map { ($0.0!, $0.1!) }
+public func all<A, B>(_ a: Observation<A>, _ b: Observation<B>) -> Observation<(A, B)> {
+    return a.and(b)
 }
 
 /// Notify observers when one of the observations changes.

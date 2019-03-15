@@ -20,18 +20,31 @@ class OperationTests: XCTestCase {
     }
     
     func testFlatMap() {
-        var received = [Int]()
+        func asyncTask(_ v: Int) -> Observation<String> {
+            return Observation { observation in
+                DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: DispatchTime.now() + .seconds(3)) {
+                    observation.action(.next("Hi \(v)"))
+                }
+                return Disposable { }
+            }
+        }
+        
+        var received = [String]()
         let value = Observable<Int>(0)
-        let o1 = Observable<Int>(1)
-        let o2 = Observable<Int>(2)
+        let e = XCTestExpectation(description: "hi")
+        e.expectedFulfillmentCount = 3
         let d = value.observe()
-            .flatMap { if isEven($0) { return o2.observe() } else { return o1.observe() } }
-            .subscribe { received.append($0) }
+            .flatMap(asyncTask)
+            .on(DispatchQueue.main)
+            .subscribe { t in
+                received.append(t)
+                e.fulfill()
+            }
         value.val = 1
         value.val = 2
+        wait(for: [e], timeout: 15)
         d.dispose()
-        value.val = 3
-        XCTAssertEqual(received, [2, 1, 2])
+        XCTAssertEqual(Set(received), Set(["Hi 0", "Hi 1", "Hi 2"]))
     }
     
     func testFilter() {
