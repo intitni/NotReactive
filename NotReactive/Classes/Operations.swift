@@ -56,17 +56,6 @@ extension Observation {
         }
     }
     
-    /// Ignores the latest event. Useful when you subscribe but don't want the initial value
-    public func ignoreLatest() -> Observation<V> {
-        return Observation { observation in
-            var initial = true // 用于判断是否初次事件触发
-            return self.subscribeEvent { event in
-                guard !initial else { initial = false; return }
-                observation.action(event)
-            }
-        }
-    }
-    
     /// Notify observers when value passes validation.
     public func filter(_ validate: @escaping (V)->Bool) -> Observation {
         return Observation { observation in
@@ -74,6 +63,15 @@ extension Observation {
                 if case let .next(v) = event, !validate(v) { return }
                 observation.action(event)
             }
+        }
+    }
+
+    /// Ignores the latest event. Useful when you subscribe but don't want the initial value
+    public func ignoreLatest() -> Observation<V> {
+        var initial = true
+        return filter { v in
+            defer { initial = false }
+            return !initial
         }
     }
     
@@ -121,11 +119,10 @@ extension Observation {
 extension Observation where V: Equatable {
     /// Notify observers only when value is changed.
     public func distinct() -> Observation<V> {
-        return Observation { observation in
-            return self.subscribeEvent { event in
-                if case let (.next(v), .next(o)?) = (event, observation.latestEvent), o == v { return }
-                observation.action(event)
-            }
+        var previous: V? = nil
+        return filter { v in
+            defer { previous = v }
+            return v != previous
         }
     }
 }

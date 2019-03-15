@@ -152,7 +152,7 @@ class OperationTests: XCTestCase {
         let all2 = all(a.observe(), b.observe())
             .subscribe { av, bv in
                 resultAll2.append((av, bv))
-        }
+            }
         
         let all3 = all(a.observe(), b.observe(), c.observe())
             .subscribe { av, bv, cv in

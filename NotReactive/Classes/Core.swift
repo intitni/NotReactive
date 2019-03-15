@@ -115,7 +115,7 @@ public class Emitter<V>: Notifier<V> {
 
 /// Notifies changes of value.
 public class Observable<V>: Notifier<V> {
-    public var oldValue: V? = nil
+    public private(set) var oldValue: V? = nil
     public var val: V {
         didSet {
             self.oldValue = oldValue
