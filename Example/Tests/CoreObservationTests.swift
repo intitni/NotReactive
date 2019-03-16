@@ -1,5 +1,5 @@
 import XCTest
-import NotReactive
+@testable import NotReactive
 
 class CoreObservationTests: XCTestCase {
     func testObservableObserve() {
@@ -43,6 +43,16 @@ class CoreObservationTests: XCTestCase {
         else { XCTAssert(false) }
         if case .failure = receivedEvents[3] { XCTAssert(true) }
         else { XCTAssert(false) }
+    }
+    
+    func testSingleObservation() {
+        let observation = OneTimeObservation<Int> { observation in return Disposable {} }
+        var fireCount = 0
+        let d = observation.subscribe { _ in fireCount += 1 }
+        observation.action(.next(1))
+        observation.action(.next(2))
+        XCTAssertEqual(fireCount, 1)
+        d.dispose()
     }
     
     func testBind() {

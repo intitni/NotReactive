@@ -29,9 +29,9 @@ public class Observation<V> {
         case failure
     }
     
-    private var observers = [(String, (Event)->Void)]()
+    var observers = [(String, (Event)->Void)]()
     private(set) var latestEvent: Event? = nil
-    private let disposeBag = DisposeBag()
+    let disposeBag = DisposeBag()
     
     deinit { disposeBag.dispose() }
     
@@ -39,11 +39,13 @@ public class Observation<V> {
         observeBlock(WeakObservation(self)).disposed(by: disposeBag)
     }
     
-    private func action(_ event: Event) {
+    func action(_ event: Event) {
         observers.forEach { $0.1(event) }
         latestEvent = event
     }
-    
+}
+
+public extension Observation {
     public func subscribeEvent(perform block: @escaping (Event)->Void) -> Disposable {
         let uuid = UUID().uuidString
         observers.append((uuid, block))
@@ -66,62 +68,14 @@ public class Observation<V> {
     }
 }
 
-/// Sends events to observers.
-public class Notifier<V> {
-    typealias ObserverBlock = (Observation<V>.Event) -> Void
-    typealias Observer = (String, ObserverBlock)
-    
-    private var observers = [Observer]()
-    public var latestEvent: Observation<V>.Event? = nil
-    
-    private func addObserver(_ block: @escaping ObserverBlock) -> Disposable {
-        let uuid = UUID().uuidString
-        observers.append((uuid, block))
-        return Disposable { [weak self, uuid] in
-            guard let self = self else { return }
-            self.observers.removeAll(where: { $0.0 == uuid })
-        }
+/// An Observation that ends after action. You may use it for async calls.
+public class OneTimeObservation<V>: Observation<V> {
+    private var isEnded = false
+    override func action(_ event: Observation<V>.Event) {
+        guard !isEnded else { return }
+        isEnded = true
+        super.action(event)
+        disposeBag.dispose()
+        observers.removeAll()
     }
-    
-    /// Sends events to observers.
-    public func notify(_ event: Observation<V>.Event) {
-        latestEvent = event
-        observers.forEach { $0.1(event) }
-    }
-    
-    /// Creates an observation on a specific queue.
-    public func observe() -> Observation<V> {
-        let queue = DispatchQueue.main
-        return Observation { observation in
-            if let e = self.latestEvent { queue.safeAsync { observation.action(e) } }
-            return self.addObserver { event in
-                queue.safeAsync { observation.action(event) }
-            }
-        }
-    }
-}
-
-/// Emits either a next event or failure event.
-public class Emitter<V>: Notifier<V> {
-    public override init() { super.init() }
-    
-    public func emit(_ value: V) {
-        notify(.next(value))
-    }
-    public func emit(_ error: Error) {
-        notify(.failure(error))
-    }
-}
-
-/// Notifies changes of value.
-public class Observable<V>: Notifier<V> {
-    public private(set) var oldValue: V? = nil
-    public var val: V {
-        didSet {
-            self.oldValue = oldValue
-            notify(.next(val))
-        }
-    }
-    
-    public init(_ val: V) { self.val = val; super.init(); self.latestEvent = .next(val) }
 }
