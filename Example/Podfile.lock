@@ -1,5 +1,5 @@
 PODS:
-  - NotReactive (0.1.0)
+  - NotReactive (0.2.4)
 
 DEPENDENCIES:
   - NotReactive (from `../`)
@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  NotReactive: 55d48bb7d8b5083f535bb3899d45f347589c8ac1
+  NotReactive: 040c05fc6d3ed676a6ee9c9a2248389b9b4caf81
 
 PODFILE CHECKSUM: 5a6a62e2ce585779ae2db113ffb62a42c73e9063
 
