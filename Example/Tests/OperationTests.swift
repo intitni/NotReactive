@@ -8,7 +8,7 @@ func isEven(_ v: Int) -> Bool {
 class OperationTests: XCTestCase {
     func testMap() {
         var received = [String]()
-        let value = Observable<Int>(0)
+        let value = Value<Int>(0)
         let d = value.observe()
             .map { String($0) }
             .subscribe { received.append($0) }
@@ -20,8 +20,8 @@ class OperationTests: XCTestCase {
     }
     
     func testFlatMap() {
-        func asyncTask(_ v: Int) -> Observation<String> {
-            return Observation { observation in
+        func asyncTask(_ v: Int) -> Observable<String> {
+            return Observable { observation in
                 DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: DispatchTime.now() + .seconds(3)) {
                     observation.action(.next("Hi \(v)"))
                 }
@@ -30,7 +30,7 @@ class OperationTests: XCTestCase {
         }
         
         var received = [String]()
-        let value = Observable<Int>(0)
+        let value = Value<Int>(0)
         let e = XCTestExpectation(description: "hi")
         e.expectedFulfillmentCount = 3
         let d = value.observe()
@@ -49,7 +49,7 @@ class OperationTests: XCTestCase {
     
     func testFilter() {
         var received = [Int]()
-        let value = Observable<Int>(0)
+        let value = Value<Int>(0)
         let d = value.observe()
             .filter(isEven)
             .subscribe { received.append($0) }
@@ -62,7 +62,7 @@ class OperationTests: XCTestCase {
     
     func testIgnoreLatest() {
         var received = [Int]()
-        let value = Observable<Int>(0)
+        let value = Value<Int>(0)
         let d = value.observe()
             .ignoreLatest()
             .subscribe { received.append($0) }
@@ -76,7 +76,7 @@ class OperationTests: XCTestCase {
     func testFilterNil() {
         var received = [Int?]()
         var count = 0
-        let value = Observable<Int?>(0)
+        let value = Value<Int?>(0)
         let d = value.observe()
             .filterNil()
             .subscribe { count += 1; received.append($0) }
@@ -92,7 +92,7 @@ class OperationTests: XCTestCase {
     
     func testDistinct() {
         var received = [Int]()
-        let value = Observable<Int>(0)
+        let value = Value<Int>(0)
         let d = value.observe()
             .distinct()
             .subscribe { received.append($0) }
@@ -108,7 +108,7 @@ class OperationTests: XCTestCase {
     func testOnQueue() {
         let queue = DispatchQueue.global(qos: .userInteractive) // concurrent queue
         var values = [Int]()
-        let value = Observable<Int>(6)
+        let value = Value<Int>(6)
         let d1 = value.observe()
             .ignoreLatest() // I still can't figure out why 6 can be in the front, ignoring first value for now
             .on(queue)
@@ -135,8 +135,8 @@ class OperationTests: XCTestCase {
         var resultAny3 = [(Int?, Int?, Int?)]()
         var resultAll2 = [(Int, Int)]()
         var resultAll3 = [(Int, Int, Int)]()
-        let a = Observable<Int>(0)
-        let b = Observable<Int>(0)
+        let a = Value<Int>(0)
+        let b = Value<Int>(0)
         let c = Emitter<Int>()
         
         let any2 = any(a.observe(), b.observe())
@@ -180,7 +180,7 @@ class OperationTests: XCTestCase {
     func testThrottling() {
         var received = [Int]()
         let expectation = XCTestExpectation(description: "hi")
-        let value = Observable<Int>(0)
+        let value = Value<Int>(0)
         let d = value.observe()
             .throttle(seconds: 1)
             .subscribe { received.append($0); expectation.fulfill() }

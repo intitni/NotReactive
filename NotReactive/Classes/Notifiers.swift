@@ -1,10 +1,10 @@
 /// Sends events to observers.
 public class Notifier<V> {
-    public typealias ObserverBlock = (Observation<V>.Event) -> Void
+    public typealias ObserverBlock = (Observable<V>.Event) -> Void
     public typealias Observer = (String, ObserverBlock)
     
     public var observers = [Observer]()
-    public var latestEvent: Observation<V>.Event? = nil
+    public var latestEvent: Observable<V>.Event? = nil
     
     private func addObserver(_ block: @escaping ObserverBlock) -> Disposable {
         let uuid = UUID().uuidString
@@ -16,15 +16,15 @@ public class Notifier<V> {
     }
     
     /// Sends events to observers.
-    public func notify(_ event: Observation<V>.Event) {
+    public func notify(_ event: Observable<V>.Event) {
         latestEvent = event
         observers.forEach { $0.1(event) }
     }
     
     /// Creates an observation on a specific queue.
-    public func observe() -> Observation<V> {
+    public func observe() -> Observable<V> {
         let queue = DispatchQueue.main
-        return Observation { observation in
+        return Observable { observation in
             if let e = self.latestEvent { queue.safeAsync { observation.action(e) } }
             return self.addObserver { event in
                 queue.safeAsync { observation.action(event) }
@@ -46,7 +46,7 @@ public class Emitter<V>: Notifier<V> {
 }
 
 /// Notifies changes of value.
-public class Observable<V>: Notifier<V> {
+public class Value<V>: Notifier<V> {
     public private(set) var oldValue: V? = nil
     public var val: V {
         didSet {

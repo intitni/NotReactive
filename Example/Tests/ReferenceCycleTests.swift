@@ -5,11 +5,11 @@ class ReferenceCycleTests: XCTestCase {
     func test() {
         class ViewController {
             var received = [Int]()
-            let value = Observable<Int>(0)
+            let value = Value<Int>(0)
             let disposeBag = DisposeBag()
-            weak var obs: Observation<Int>?
-            weak var ignoreLatestObs: Observation<Int>?
-            weak var distinctObs: Observation<Int>?
+            weak var obs: Observable<Int>?
+            weak var ignoreLatestObs: Observable<Int>?
+            weak var distinctObs: Observable<Int>?
             var expectation: XCTestExpectation?
             
             deinit {

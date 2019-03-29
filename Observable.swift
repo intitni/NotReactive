@@ -1,6 +1,6 @@
-public class Observation<V> {
+public class Observable<V> {
     public class WeakObservation {
-        weak var observation: Observation<V>?
+        weak var observation: Observable<V>?
         public var latestEvent: Event? { return observation?.latestEvent }
         public func action(_ event: Event) {
             observation?.action(event)
@@ -9,7 +9,7 @@ public class Observation<V> {
             guard let o = observation else { return }
             disposable.disposed(by: o.disposeBag)
         }
-        public init(_ s: Observation<V>) { observation = s }
+        public init(_ s: Observable<V>) { observation = s }
     }
     
     public enum Event {
@@ -45,33 +45,33 @@ public class Observation<V> {
     }
 }
 
-public extension Observation {
-    public func subscribeEvent(perform block: @escaping (Event)->Void) -> Disposable {
+public extension Observable {
+    func subscribeEvent(perform block: @escaping (Event)->Void) -> Disposable {
         let uuid = UUID().uuidString
         observers.append((uuid, block))
         if let e = latestEvent { block(e) }
         return Disposable { [uuid] in self.observers.removeAll(where: { $0.0 == uuid }) }
     }
     
-    public func subscribe(onNext: @escaping (V)->Void) -> Disposable {
+    func subscribe(onNext: @escaping (V)->Void) -> Disposable {
         return subscribeEvent { event in
             if case let .next(v) = event { onNext(v) }
         }
     }
     
-    public func bind<Target: AnyObject>(to target: Target?, at targetKeyPath: WritableKeyPath<Target, V>) -> Disposable {
+    func bind<Target: AnyObject>(to target: Target?, at targetKeyPath: WritableKeyPath<Target, V>) -> Disposable {
         return subscribe { [weak target] in target?[keyPath: targetKeyPath] = $0 }
     }
     
-    public func bind<Target: AnyObject>(to target: Target?, at targetKeyPath: WritableKeyPath<Target, V?>) -> Disposable {
+    func bind<Target: AnyObject>(to target: Target?, at targetKeyPath: WritableKeyPath<Target, V?>) -> Disposable {
         return subscribe { [weak target] in target?[keyPath: targetKeyPath] = $0 }
     }
 }
 
 /// An Observation that ends after action. You may use it for async calls.
-public class OneTimeObservation<V>: Observation<V> {
+public class OneTimeObservation<V>: Observable<V> {
     private var isEnded = false
-    override func action(_ event: Observation<V>.Event) {
+    override func action(_ event: Observable<V>.Event) {
         guard !isEnded else { return }
         isEnded = true
         super.action(event)

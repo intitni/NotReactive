@@ -4,7 +4,7 @@ import XCTest
 class CoreObservationTests: XCTestCase {
     func testObservableObserve() {
         var received = [Int]()
-        let value = Observable<Int>(0)
+        let value = Value<Int>(0)
         value.val = 1
         let disposable = value.observe().subscribe { received.append($0) }
         value.val = 2
@@ -18,7 +18,7 @@ class CoreObservationTests: XCTestCase {
     
     func testEmitterObserve() {
         var receivedValues = [Int]()
-        var receivedEvents = [Observation<Int>.Event]()
+        var receivedEvents = [Observable<Int>.Event]()
         let emitter = Emitter<Int>()
         emitter.emit(0)
         let observation = emitter.observe()
@@ -61,7 +61,7 @@ class CoreObservationTests: XCTestCase {
             var o: Int? = 0
         }
         
-        let value = Observable<Int>(0)
+        let value = Value<Int>(0)
         value.val = 1
         let observation = value.observe()
         let p = P()

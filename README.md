@@ -1,6 +1,6 @@
 # NotReactive
 
-[![CI Status](https://img.shields.io/travis/intitni/NotReactive.svg?style=flat)](https://travis-ci.org/intitni/NotReactive)
+[![Language](https://img.shields.io/badge/language-swift-orange.svg)](https://travis-ci.org/intitni/NotReactive)
 [![Version](https://img.shields.io/cocoapods/v/NotReactive.svg?style=flat)](https://cocoapods.org/pods/NotReactive)
 [![License](https://img.shields.io/cocoapods/l/NotReactive.svg?style=flat)](https://cocoapods.org/pods/NotReactive)
 [![Platform](https://img.shields.io/cocoapods/p/NotReactive.svg?style=flat)](https://cocoapods.org/pods/NotReactive)
@@ -9,12 +9,12 @@ All those reactive libraries are cool, but they can be too complicated to do rig
 
 ## Usage
 
-### Observable<V>
+### Value<V>
 
-`Observable` initializes with a default value. On subscription, observers immediately receive the latest value.
+`Value` initializes with a default value. On subscription, observers immediately receive the latest value.
 
 ```swift
-let value = Observable<Int>(0)
+let value = Value<Int>(0)
 let disposable = value.observe().subscribe { print($0) }
 value.val = 1
 // prints: 
@@ -65,7 +65,7 @@ let disposable = textField.observe(.editingChanged, take: \.text).subscribe { pr
 ### Operators
 
 ```swift
-let value = Observation<Int>(0)
+let value = Observable<Int>(0)
 let disposable = value.observe()
     .ignoreLatest()
     .map { $0 }

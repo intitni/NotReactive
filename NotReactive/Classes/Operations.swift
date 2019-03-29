@@ -1,11 +1,11 @@
-extension Observation {
+extension Observable {
     public struct CompositionError: Error {
         let errors: [Error]
     }
     
     /// Converts value to another observation.
-    public func flatMap<M>(_ transform: @escaping (V)->Observation<M>) -> Observation<M> {
-        return Observation<M> { observation in
+    public func flatMap<M>(_ transform: @escaping (V)->Observable<M>) -> Observable<M> {
+        return Observable<M> { observation in
             return self.subscribeEvent { event in
                 switch event {
                 case let .next(v):
@@ -21,8 +21,8 @@ extension Observation {
     }
     
     /// Converts value to another value.
-    public func map<M>(_ transform: @escaping (V)->M) -> Observation<M> {
-        return Observation<M> { observation in
+    public func map<M>(_ transform: @escaping (V)->M) -> Observable<M> {
+        return Observable<M> { observation in
             return self.subscribeEvent { event in
                 switch event {
                 case let .next(v): observation.action(.next(transform(v)))
@@ -33,8 +33,8 @@ extension Observation {
     }
     
     /// Notify observers on specific queue.
-    public func on(_ queue: DispatchQueue) -> Observation<V> {
-        return Observation { observation in
+    public func on(_ queue: DispatchQueue) -> Observable<V> {
+        return Observable { observation in
             return self.subscribeEvent { event in
                 queue.safeAsync { observation.action(event) }
             }
@@ -42,9 +42,9 @@ extension Observation {
     }
     
     /// Throttles observations.
-    public func throttle(seconds: TimeInterval) -> Observation<V> {
+    public func throttle(seconds: TimeInterval) -> Observable<V> {
         let throttler = Throttler(seconds: seconds)
-        return Observation { observation in
+        return Observable { observation in
             return self.subscribeEvent { event in
                 throttler.throttle {
                     switch event {
@@ -57,8 +57,8 @@ extension Observation {
     }
     
     /// Notify observers when value passes validation.
-    public func filter(_ validate: @escaping (V)->Bool) -> Observation {
-        return Observation { observation in
+    public func filter(_ validate: @escaping (V)->Bool) -> Observable {
+        return Observable { observation in
             return self.subscribeEvent { event in
                 if case let .next(v) = event, !validate(v) { return }
                 observation.action(event)
@@ -67,7 +67,7 @@ extension Observation {
     }
 
     /// Ignores the latest event. Useful when you subscribe but don't want the initial value
-    public func ignoreLatest() -> Observation<V> {
+    public func ignoreLatest() -> Observable<V> {
         var initial = true
         return filter { v in
             defer { initial = false }
@@ -75,8 +75,8 @@ extension Observation {
         }
     }
     
-    public func or<M>(_ another: Observation<M>) -> Observation<(V?, M?)> {
-        return Observation<(V?, M?)> { observation in
+    public func or<M>(_ another: Observable<M>) -> Observable<(V?, M?)> {
+        return Observable<(V?, M?)> { observation in
             let a = self.subscribeEvent { [weak another] event in
                 switch (event, another?.latestEvent) {
                 case let (.next(lv), .next(rv)?): observation.action(.next((lv, rv)))
@@ -95,8 +95,8 @@ extension Observation {
         }
     }
     
-    public func and<M>(_ another: Observation<M>) -> Observation<(V, M)> {
-        return Observation<(V, M)> { observation in
+    public func and<M>(_ another: Observable<M>) -> Observable<(V, M)> {
+        return Observable<(V, M)> { observation in
             let a = self.subscribeEvent { [weak another] event in
                 switch (event, another?.latestEvent) {
                 case let (.next(lv), .next(rv)?): observation.action(.next((lv, rv)))
@@ -116,9 +116,9 @@ extension Observation {
     }
 }
 
-extension Observation where V: Equatable {
+extension Observable where V: Equatable {
     /// Notify observers only when value is changed.
-    public func distinct() -> Observation<V> {
+    public func distinct() -> Observable<V> {
         var previous: V? = nil
         return filter { v in
             defer { previous = v }
@@ -128,16 +128,16 @@ extension Observation where V: Equatable {
 }
 
 /// Notify observers when one of the observations changes.
-public func any<A, B>(_ a: Observation<A>, _ b: Observation<B>) -> Observation<(A?, B?)> {
+public func any<A, B>(_ a: Observable<A>, _ b: Observable<B>) -> Observable<(A?, B?)> {
     return a.or(b)
 }
 
-public func all<A, B>(_ a: Observation<A>, _ b: Observation<B>) -> Observation<(A, B)> {
+public func all<A, B>(_ a: Observable<A>, _ b: Observable<B>) -> Observable<(A, B)> {
     return a.and(b)
 }
 
 /// Notify observers when one of the observations changes.
-public func any<A, B, C>(_ a: Observation<A>, _ b: Observation<B>, _ c: Observation<C>) -> Observation<(A?, B?, C?)> {
+public func any<A, B, C>(_ a: Observable<A>, _ b: Observable<B>, _ c: Observable<C>) -> Observable<(A?, B?, C?)> {
     let aOrB = any(a, b)
     return any(aOrB, c).map { arg in let (eab, ec) = arg
         if let eab = eab { return (eab.0, eab.1, ec) }
@@ -145,7 +145,7 @@ public func any<A, B, C>(_ a: Observation<A>, _ b: Observation<B>, _ c: Observat
     }
 }
 
-public func all<A, B, C>(_ a: Observation<A>, _ b: Observation<B>, _ c: Observation<C>) -> Observation<(A, B, C)> {
+public func all<A, B, C>(_ a: Observable<A>, _ b: Observable<B>, _ c: Observable<C>) -> Observable<(A, B, C)> {
     return any(a, b, c)
         .filter { $0.0 != nil && $0.1 != nil && $0.2 != nil }
         .map { ($0.0!, $0.1!, $0.2!) }
@@ -162,9 +162,9 @@ extension Optional: OptionalType {
     }
 }
 
-extension Observation where V: OptionalType {
+extension Observable where V: OptionalType {
     /// Notify observers when value is not nil
-    public func filterNil() -> Observation<V.Wrapped> {
+    public func filterNil() -> Observable<V.Wrapped> {
         return filter { $0.value != nil } .map { $0.value! }
     }
 }
