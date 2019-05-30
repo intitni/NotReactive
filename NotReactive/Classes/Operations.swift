@@ -32,6 +32,14 @@ extension Observable {
         }
     }
     
+    public func withOldValue() -> Observable<(V, V?)> {
+        var previous: V? = nil
+        return map { current in
+            defer { previous = current }
+            return (current, previous)
+        }
+    }
+    
     /// Notify observers on specific queue.
     public func on(_ queue: DispatchQueue) -> Observable<V> {
         return Observable { observation in

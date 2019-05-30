@@ -65,7 +65,7 @@ let disposable = textField.observe(.editingChanged, take: \.text).subscribe { pr
 ### Operators
 
 ```swift
-let value = Observable<Int>(0)
+let value = Value<Int>(0)
 let disposable = value.observe()
     .ignoreLatest()
     .map { $0 }
@@ -75,6 +75,7 @@ let disposable = value.observe()
     .on(DispatchQueue.main)
     .filterNil()
     .filter { $0 > 0 }
+    .withOldValue()
     .subscribe { print($0) } // or bind(to:at:)
     
 any(a.observe(), b.observe(), c.observe())
