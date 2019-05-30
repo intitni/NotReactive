@@ -105,6 +105,23 @@ class OperationTests: XCTestCase {
         XCTAssertEqual(received, [0, 1, 2])
     }
     
+    func testWithOldValue() {
+        var newValues = [Int]()
+        var oldValues = [Int?]()
+        let value = Value<Int>(0)
+        let d = value.observe()
+            .withOldValue()
+            .subscribe { newValues.append($0.0); oldValues.append($0.1) }
+        value.val = 1
+        value.val = 1
+        value.val = 2
+        value.val = 2
+        d.dispose()
+        value.val = 3
+        XCTAssertEqual(newValues, [0, 1, 1, 2, 2])
+        XCTAssertEqual(oldValues, [nil, 0, 1, 1, 2])
+    }
+    
     func testOnQueue() {
         let queue = DispatchQueue.global(qos: .userInteractive) // concurrent queue
         var values = [Int]()

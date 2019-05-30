@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		052D740AD152BE43DD9231174C080ACA /* Operations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A037C17C4B691C3C846C5D1CC48D38 /* Operations.swift */; };
+		136DECBE2266DA130067C561 /* UIGestureRecognizer+LightWeightReactive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136DECBD2266DA130067C561 /* UIGestureRecognizer+LightWeightReactive.swift */; };
 		17DC24174685E1E8FF0F212F8DEC12E8 /* NotReactive-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F8FC71821F5A61C5DF981D1F9C8F6D1 /* NotReactive-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1C54DA7E007192A298FF7A7F3D2970D0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB4607EFCA7C5F75397649E792E2AFCB /* Foundation.framework */; };
 		22910A59E10D5A0B42BB2A2B1D35E41C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB4607EFCA7C5F75397649E792E2AFCB /* Foundation.framework */; };
@@ -48,6 +49,7 @@
 		06E8AE41026A664B3AB6370DC1184542 /* Pods-NotReactive_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-NotReactive_Example-acknowledgements.plist"; sourceTree = "<group>"; };
 		0E9C00C3807928FA3597E7F5579EBB54 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		12D542A51284A4A81FF2D0D822324459 /* Pods-NotReactive_Tests-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-NotReactive_Tests-acknowledgements.plist"; sourceTree = "<group>"; };
+		136DECBD2266DA130067C561 /* UIGestureRecognizer+LightWeightReactive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIGestureRecognizer+LightWeightReactive.swift"; sourceTree = "<group>"; };
 		1D457E7581630798BEAF022E79106407 /* Observable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Observable.swift; path = NotReactive/Classes/Observable.swift; sourceTree = "<group>"; };
 		241B0C35489BBBCE5A8C4793312CF46E /* Pods-NotReactive_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-NotReactive_Example-umbrella.h"; sourceTree = "<group>"; };
 		2777B9DE263F858323E70445B95E1459 /* Pods-NotReactive_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-NotReactive_Tests.release.xcconfig"; sourceTree = "<group>"; };
@@ -143,6 +145,7 @@
 				A1A037C17C4B691C3C846C5D1CC48D38 /* Operations.swift */,
 				9F5F1AF362684E49CA2807B5461D6DB5 /* Throttler.swift */,
 				FA01E75B3A1EC20F641787419DC247D4 /* UIControl+LightWeightReactive.swift */,
+				136DECBD2266DA130067C561 /* UIGestureRecognizer+LightWeightReactive.swift */,
 				A01031C598FD77EA1065148D6C1794EA /* Pod */,
 				F4761EDCABFF6A61E3979187570B6900 /* Support Files */,
 			);
@@ -409,6 +412,7 @@
 				F6F302BCA9AC19A2C8B255F8E1BBC5EF /* Notifiers.swift in Sources */,
 				F3804B46AE3797E4C57A138FEBF34A87 /* NotReactive-dummy.m in Sources */,
 				5495250C5BB2B9AD67D61D6BCE521844 /* Observable.swift in Sources */,
+				136DECBE2266DA130067C561 /* UIGestureRecognizer+LightWeightReactive.swift in Sources */,
 				052D740AD152BE43DD9231174C080ACA /* Operations.swift in Sources */,
 				951601981790A19BAA02E5C2E9AF819E /* Throttler.swift in Sources */,
 				685756AD522E87CCB1FE468108F367D8 /* UIControl+LightWeightReactive.swift in Sources */,
