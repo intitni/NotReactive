@@ -10,9 +10,8 @@ public extension NSObjectProtocol where Self: NSObject {
     }
 
     func subscribe<V>(_ keyPath: KeyPath<Self, V>, onChange: @escaping (V, V?)->Void) -> Disposable {
-        let observation = observe(keyPath, options: [.initial, .new]) { _, change in
-            guard let newValue = change.newValue else { return }
-            onChange(newValue, change.oldValue)
+        let observation = observe(keyPath, options: [.initial, .new, .old]) { o, change in
+            onChange(o[keyPath: keyPath], change.oldValue)
         }
         return observation.disposable
     }

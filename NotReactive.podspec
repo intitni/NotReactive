@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'NotReactive'
-  s.version          = '0.2.6'
+  s.version          = '0.2.7'
   s.summary          = 'A simple way to subscribe to value change or event emission.'
   s.description      = 'A siiiimple way to subscribe to value change or event emission.'
 
